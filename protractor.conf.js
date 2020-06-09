@@ -1,33 +1,30 @@
 const
     { ConsoleReporter } = require('@serenity-js/console-reporter'),
     { ArtifactArchiver } = require('@serenity-js/core'),
-    { Photographer, TakePhotosOfInteractions } = require('@serenity-js/protractor'),
-    { SerenityBDDReporter } = require('@serenity-js/serenity-bdd'),
-    isCI = require('is-ci');
+    { Photographer, TakePhotosOfFailures } = require('@serenity-js/protractor'),
+    { SerenityBDDReporter } = require('@serenity-js/serenity-bdd');
 
 exports.config = {
-    baseUrl: 'https://juliemr.github.io/',
+    baseUrl: 'http://localhost:4200/',
 
     chromeDriver: require(`chromedriver/lib/chromedriver`).path,
 
     SELENIUM_PROMISE_MANAGER: false,
-
     directConnect: true,
-
-    // https://github.com/angular/protractor/blob/master/docs/timeouts.md
-    allScriptsTimeout: 110000,
+    defaultTimeout: 20000,
+    allScriptsTimeout: 20000,
 
     framework:      'custom',
     frameworkPath:  require.resolve('@serenity-js/protractor/adapter'),
 
-    specs: [ 'features/**/*.feature' ],
+    specs: [ 'e2e/**/*.feature' ],
 
     serenity: {
         runner: 'cucumber',
         crew: [
             ArtifactArchiver.storingArtifactsAt('./target/site/serenity'),
             ConsoleReporter.forDarkTerminals(),
-            Photographer.whoWill(TakePhotosOfInteractions),     // or Photographer.whoWill(TakePhotosOfFailures),
+            Photographer.whoWill(TakePhotosOfFailures),
             new SerenityBDDReporter(),
         ]
     },
@@ -37,12 +34,12 @@ exports.config = {
      * uncomment the below onPrepare section,
      * which disables Angular-specific test synchronisation.
      */
-    // onPrepare: function() {
-    //     browser.waitForAngularEnabled(false);
-    // },
+     onPrepare: function() {
+         browser.manage().window().maximize();
+     },
 
     cucumberOpts: {
-        require: [ 'features/**/*.ts', ],
+        require: [ 'e2e/**/*.ts', ],
         'require-module':   [ 'ts-node/register'],
         tags:    ['~@wip'],
         strict:  false,
@@ -65,7 +62,7 @@ exports.config = {
                 '--log-level=3',
                 '--disable-gpu',
                 '--window-size=1920,1080',
-            ].concat(isCI ? ['--headless'] : [])    // run in headless mode on the CI server
+            ]
         }
     }
 };
